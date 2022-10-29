@@ -28,8 +28,8 @@
     <div>
       <h1>This is my dApp!</h1>
       <p>Here we can set or get the colour:</p>
-      <label for="mood">Input Colour:</label> <br />
-      <input type="text" id="mood" />
+      <label for="colour">Input Colour:</label> <br />
+      <input type="text" id="colour" />
       <button onclick="getColour()">Get Colour</button>
       <button onclick="setColour()">Set Colour</button>
     </div>
@@ -39,8 +39,12 @@
     type="application/javascript"
   ></script>
   <script>
-    const MoodContractAddress = "0xC87c60a411A8a228fc3629267C374c0ba01DcF4D";
-    const MoodContractABI = [
+    const provider = new ethers.providers.Web3Provider(
+      window.ethereum,
+      "goerli"
+    );
+    const ColourContractAddress = "0xC87c60a411A8a228fc3629267C374c0ba01DcF4D";
+    const ColourContractABI = [
       {
         inputs: [
           {
@@ -68,7 +72,28 @@
         type: "function",
       },
     ];
-    let MoodContract;
+    let ColourContract;
     let signer;
+    provider.send("eth_requestAccounts", []).then(() => {
+      provider.listAccounts().then((accounts) => {
+        signer = provider.getSigner(accounts[0]);
+        ColourContract = new ethers.Contract(
+          ColourContractAddress,
+          ColourContractABI,
+          signer
+        );
+      });
+    });
+    async function getColour() {
+      const getColourPromise = ColourContract.getColour();
+      const Colour = await getColourPromise;
+      console.log(Colour);
+    }
+
+    async function setColour() {
+      const Colour = document.getElementById("colour").value;
+      const setColourPromise = ColourContract.setColour(colour);
+      await setColourPromise;
+    }
   </script>
 </html>
